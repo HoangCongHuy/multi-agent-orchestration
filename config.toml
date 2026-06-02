@@ -1,0 +1,84 @@
+# ============================================================
+# Cấu hình agentflow
+# Sửa file này để đổi model / thêm bớt agent — không cần sửa code.
+# ============================================================
+
+# ---------- PROVIDERS: khai báo cách gọi model ----------
+
+# Anthropic API (cần ANTHROPIC_API_KEY trong .env)
+[providers.opus]
+type = "anthropic"
+model = "claude-opus-4-8"
+max_tokens = 8192
+
+# Opus chạy qua CLI `claude` (KHÔNG cần API key, chỉ cần đã đăng nhập Claude Code).
+# `-p` = print mode (headless), prompt đẩy qua stdin.
+[providers.opus_cli]
+type = "cli"
+command = "claude"
+args = ["-p", "--model", "opus"]
+prompt_via = "stdin"
+
+[providers.haiku]
+type = "anthropic"
+model = "claude-haiku-4-5-20251001"
+max_tokens = 4096
+
+# Haiku chạy qua CLI `claude` (không cần API key).
+[providers.haiku_cli]
+type = "cli"
+command = "claude"
+args = ["-p", "--model", "haiku"]
+prompt_via = "stdin"
+
+# OpenAI API (cần OPENAI_API_KEY trong .env)
+[providers.gpt]
+type = "openai"
+model = "gpt-5"
+max_tokens = 8192
+
+# Gọi CLI codex có sẵn trên máy (không cần API key ở đây).
+# prompt_via = "stdin" -> đẩy prompt qua stdin; hoặc "arg".
+[providers.codex]
+type = "cli"
+command = "codex"
+args = ["exec"]
+prompt_via = "stdin"
+
+# ---------- AGENTS: pipeline chạy tuần tự theo thứ tự dưới đây ----------
+
+[[agents]]
+name = "researcher"
+provider = "haiku_cli"   # việc nhẹ -> haiku (chạy qua CLI, không cần API)
+system = """
+Bạn là agent TÌM HIỂU TASK. Nhiệm vụ: phân tích task được giao, làm rõ \
+mục tiêu, ràng buộc, đầu vào/đầu ra mong muốn, và những điểm còn mơ hồ. \
+Liệt kê giả định nếu có. KHÔNG đưa ra giải pháp, chỉ làm rõ vấn đề.
+"""
+
+[[agents]]
+name = "planner"
+provider = "opus_cli"   # việc khó -> opus (chạy qua CLI, không cần API)
+system = """
+Bạn là agent LÊN KẾ HOẠCH. Dựa trên phần phân tích task, hãy lập kế hoạch \
+chi tiết theo từng bước, có thứ tự, nêu rõ output của mỗi bước. Kế hoạch \
+phải đủ cụ thể để người khác thực hiện được.
+"""
+
+[[agents]]
+name = "reviewer"
+provider = "opus_cli"
+system = """
+Bạn là agent REVIEW KẾ HOẠCH. Soi kế hoạch ở trên: tìm lỗ hổng, rủi ro, \
+bước thiếu, thứ tự sai. Đưa ra nhận xét thẳng thắn và một bản kế hoạch đã \
+được sửa lại nếu cần.
+"""
+
+[[agents]]
+name = "executor"
+provider = "opus_cli"
+system = """
+Bạn là agent THỰC HIỆN. Dựa trên kế hoạch đã được review, hãy thực hiện \
+task và đưa ra kết quả cuối cùng cụ thể (code, văn bản, hướng dẫn...). \
+Trình bày rõ ràng, sẵn sàng dùng được.
+"""
