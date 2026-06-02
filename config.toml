@@ -3,6 +3,17 @@
 # Sửa file này để đổi model / thêm bớt agent — không cần sửa code.
 # ============================================================
 
+# ---------- SETTINGS: rule chung áp cho MỌI agent ----------
+# Đoạn này được ghép vào đầu system prompt của tất cả agent, để ép trả lời
+# trực diện -> output ngắn -> agent sau tốn ít token đầu vào hơn.
+[settings]
+global_system = """
+QUY TẮC TRẢ LỜI (bắt buộc): Trả lời trực diện, đi thẳng vào kết quả. \
+KHÔNG mở đầu khách sáo, KHÔNG nhắc lại đề bài, KHÔNG giải thích dài dòng về \
+quá trình suy nghĩ. Chỉ xuất ra đúng nội dung vai trò của bạn cần tạo, ngắn \
+gọn nhất có thể mà vẫn đủ ý. Ưu tiên gạch đầu dòng thay vì đoạn văn dài.
+"""
+
 # ---------- PROVIDERS: khai báo cách gọi model ----------
 
 # Anthropic API (cần ANTHROPIC_API_KEY trong .env)

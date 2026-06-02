@@ -6,10 +6,38 @@ use std::path::Path;
 /// Toàn bộ cấu hình của tool, nạp từ file TOML.
 #[derive(Debug, Deserialize)]
 pub struct Config {
+    /// Cấu hình chung áp cho mọi agent.
+    #[serde(default)]
+    pub settings: Settings,
     /// Khai báo các provider (cách gọi model), key = tên tự đặt.
     pub providers: HashMap<String, ProviderConfig>,
     /// Danh sách agent, chạy theo đúng thứ tự khai báo.
     pub agents: Vec<AgentConfig>,
+}
+
+/// Cấu hình chung, hiện chứa rule về văn phong áp cho tất cả agent.
+#[derive(Debug, Deserialize)]
+pub struct Settings {
+    /// Đoạn chỉ dẫn được GHÉP VÀO ĐẦU system prompt của mọi agent.
+    /// Dùng để ép trả lời trực diện, tránh vòng vo, tiết kiệm token.
+    #[serde(default = "default_global_system")]
+    pub global_system: String,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self {
+            global_system: default_global_system(),
+        }
+    }
+}
+
+fn default_global_system() -> String {
+    "QUY TẮC TRẢ LỜI (bắt buộc): Trả lời trực diện, đi thẳng vào kết quả. \
+KHÔNG mở đầu khách sáo, KHÔNG nhắc lại đề bài, KHÔNG giải thích dài dòng về \
+quá trình suy nghĩ. Chỉ xuất ra đúng nội dung mà vai trò của bạn cần tạo, \
+ngắn gọn nhất có thể mà vẫn đủ ý. Ưu tiên gạch đầu dòng thay vì đoạn văn dài."
+        .into()
 }
 
 /// Một provider: hoặc gọi API trực tiếp, hoặc chạy CLI có sẵn.

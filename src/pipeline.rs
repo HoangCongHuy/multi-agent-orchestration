@@ -27,8 +27,11 @@ pub async fn run(cfg: &Config, task: &str) -> Result<Vec<StageResult>> {
             format!("({label})").dimmed()
         );
 
+        // Ghép rule chung (trả lời trực diện) vào trước system prompt riêng của agent.
+        let system = format!("{}\n\n{}", cfg.settings.global_system, agent.system);
+
         let user_prompt = build_user_prompt(task, &results);
-        let output = provider.complete(&agent.system, &user_prompt).await?;
+        let output = provider.complete(&system, &user_prompt).await?;
 
         println!("{}", output.dimmed());
 
